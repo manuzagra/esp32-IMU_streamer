@@ -1,1 +1,1 @@
-from streamer.streamer import *
+from streamer.streamer import MulticastStreamer
