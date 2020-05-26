@@ -20,11 +20,3 @@ class MulticastStreamer:
 
         self._socket.sendto(ujson.dumps(msg), self._multicast_group)
         self._count += 1
-
-
-def test():
-    ms = MulticastStreamer()
-    count = 0
-    while(True):
-        ms.send({'count': count, 'teta': 'mishuevos'})
-        count += 1
