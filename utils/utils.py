@@ -8,10 +8,24 @@ def cat(file):
     with open(file) as f:
         print(f.read())
 
-def is_file(path):
+def exist(path):
+    import os
     try:
-        with open(path) as f:
-            pass
+        os.stat(path)
         return True
+    except:
+        return False
+
+def is_file(path):
+    import os
+    try:
+        return bool(os.stat(path)[6])
+    except:
+        return False
+
+def is_dir(path):
+    import os
+    try:
+        return not bool(os.stat(path)[6])
     except:
         return False
