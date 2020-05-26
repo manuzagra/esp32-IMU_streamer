@@ -23,6 +23,7 @@ class JSONDB:
         # save the base path
         self._base_path = path
         # create the folder if it does not exist
+        bef = os.getcwd()
         if not utils.is_dir(path):
             for d in path.split('/'):
                 try:
@@ -30,31 +31,39 @@ class JSONDB:
                     os.chdir(d)
                 except:
                     pass
-            os.chdir('/')
+            os.chdir(bef)
         if not utils.is_dir(path):
-            raise Exception('JSONDB cannot create the structure of directories')
+            # TODO uncoment the exception, only valid in micropython
+            # raise Exception('JSONDB cannot create the structure of directories')
+            pass
 
         # to work with a collection first we will have to cache it
         self._cache = {}
 
     def _abs_path(self, path):
-        return self._base_path + '/'
+        return self._base_path + path
 
     def cache(self, collections=None):
-        with open(self._abs_path(collection)) as f:
-            self._cache[collection] = ujson.load(f)
+        if collections is None:
+            collections = os.listdir(self._base_path)
+        for coll in list(collections):
+            with open(self._abs_path(coll)) as f:
+                self._cache[coll] = ujson.load(f)
 
     def clear_cache(self, collections=None):
         self.flush(collections)
-        for coll in list(collections):
-            del self._cache[coll]
+        if collections is None:
+            self._cache = {}
+        else:
+            for coll in list(collections):
+                del self._cache[coll]
 
     def flush(self, collections=None):
         if collections is None:
             collections = self._cache.keys()
         for coll in list(collections):
-            with open(self._abs_path(collection), 'w') as f:
-                ujson.dump(self._cache[collection], f)
+            with open(self._abs_path(coll), 'w') as f:
+                ujson.dump(self._cache[coll], f)
 
     def create_collection(self, collection, cache=True):
         # a collection is gonna be a new file
@@ -65,14 +74,15 @@ class JSONDB:
 
     def drop_collection(self, collection):
         self.clear_cache(collection)
-        or.remove(self._abs_path(collection))
+        os.remove(self._abs_path(collection))
 
     def insert(self, collection, document):
-        self._cache[collection][self._cache[collection][next_id]] = document
-        self._cache[collection][next_id] += 1
+        self._cache[collection][self._cache[collection]['next_id']] = document
+        self._cache[collection]['next_id'] += 1
 
     # this decorator convert expresion into a exception free function
     # it is needed because no all the documents contain the same information
+    @staticmethod
     def _safe_expression(exp):
         def s_exp(*args, **kwargs):
             try:
@@ -88,16 +98,17 @@ class JSONDB:
                 available_fields = set(fields).intersection(set(doc.keys()))
                 return {k:v for k, v in doc.items() if k in available_fields}
         else:
-            get_fields = lambda doc: doc
-        return [get_fields(doc) for id, doc in self._cache[collection].items() if expression(doc)]
+            def get_fields(doc):
+                return doc
+        return [get_fields(doc) for _, doc in self._cache[collection].items() if expression(doc)]
 
     def update(self, collection, selection_criteria, update_function):
         selection_criteria = self._safe_expression(selection_criteria)
         update_function = self._safe_expression(update_function)
-        [update_function(d) for id, doc in self._cache[collection].items() if selection_criteria(doc)]
+        [update_function(doc) for _, doc in self._cache[collection].items() if selection_criteria(doc)]
 
     def delete(self, collection, expression):
-        def delete_doc(id):
-            del self._cache[collection][id]
+        def delete_doc(_id):
+            del self._cache[collection][_id]
         temp = self._cache[collection].items()
-        [delete_doc(id) for id, doc in temp if expression(doc)]
+        [delete_doc(_id) for _id, doc in temp if expression(doc)]
