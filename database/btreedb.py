@@ -1,7 +1,7 @@
 import btree
 import ujson
 
-class DataBase:
+class BtreeDB:
     def __init__(self, path=None):
         self._fd = None
         self._db = None
@@ -23,33 +23,34 @@ class DataBase:
     def flush(self):
         self._db.flush()
 
-    def __setitem__(self, key, val):
-        self._db[key] = ujson.dumps(val)
+    def __setitem__(self, key, value):
+        self._db[ujson.dumps(key)] = ujson.dumps(value)
+
+    def put(self, key, value):
+        self._db[ujson.dumps(key)] = ujson.dumps(value)
 
     def __getitem__(self, key):
-        return ujson.loads(self._db[key])
+        return ujson.loads(self._db[ujson.dumps(key)])
 
     def get(self, key, default=None):
-        return ujson.loads(self._db.get(key, default))
+        return ujson.loads(self._db.get(ujson.dumps(key), default))
 
     # from here maybe its better to do it in this way:
     # https://stackoverflow.com/questions/13460889/how-to-redirect-all-methods-of-a-contained-class-in-python
-    def __deltitem__(self, key):
-        self._db.__detitem__(key)
+    def __delitem__(self, key):
+        del self._db[key]
 
     def __contains__(self, key):
-        return self._db.__contains__(key)
+        return ujson.dumps(key) in self._db
 
     def __iter__(self):
-        return self._db.__iter__()
+        return iter(self._db)
 
     def keys(self, start_key=None, end_key=None, flags=0):
-        return list(self._db.keys(start_key, end_key, flags))
+        return [ujson.loads(k) for k in self._db.keys(start_key, end_key, flags)]
 
     def values(self, start_key=None, end_key=None, flags=0):
-        temp_values = self._db.values(start_key, end_key, flags)
-        return [ujson.loads(d) for d in temp_values]
+        return [ujson.loads(v) for v in self._db.values(start_key, end_key, flags)]
 
     def items(self, start_key=None, end_key=None, flags=0):
-        temp_items = self._db.items(start_key, end_key, flags)
-        return [(k, ujson.loads(v)) for k,v in temp_items]
+        return [(ujson.loads(k), ujson.loads(v)) for k,v in self._db.items(start_key, end_key, flags)]
