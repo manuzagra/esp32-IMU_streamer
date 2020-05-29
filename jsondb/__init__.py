@@ -1,1 +1,1 @@
-from jsondb.jsondb import JSONDB
+from jsondb.btreedb import DataBase

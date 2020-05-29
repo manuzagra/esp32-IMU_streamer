@@ -2,11 +2,17 @@ import btree
 import ujson
 
 class DataBase:
-    def __init__(self, path):
+    def __init__(self, path=None):
+        self._fd = None
+        self._db = None
+        if path:
+            self.open(path)
+
+    def open(self, path):
         try:
-            self._fd = open("mydb", "r+b")
+            self._fd = open(path, "r+b")
         except OSError:
-            self._fd = open("mydb", "w+b")
+            self._fd = open(path, "w+b")
 
         self._db = btree.open(self._fd)
 
@@ -14,24 +20,24 @@ class DataBase:
         self._db.close()
         self._fd.close()
 
-    def flush():
+    def flush(self):
         self._db.flush()
 
-    def __setitem__(key, val):
-        self.db.__setitem__(key, ujson.dumps(val))
+    def __setitem__(self, key, val):
+        self._db[key] = ujson.dumps(val)
 
     def __getitem__(self, key):
-        return usjon.loads(self._db.__getitem__(key))
+        return ujson.loads(self._db[key])
 
-    def get(self, key, default=None)
-        return usjon.loads(self._db.get(key, default))
+    def get(self, key, default=None):
+        return ujson.loads(self._db.get(key, default))
 
     # from here maybe its better to do it in this way:
     # https://stackoverflow.com/questions/13460889/how-to-redirect-all-methods-of-a-contained-class-in-python
-    def __detitem__(self, key):
+    def __deltitem__(self, key):
         self._db.__detitem__(key)
 
-    def __contains__(self, key)
+    def __contains__(self, key):
         return self._db.__contains__(key)
 
     def __iter__(self):
