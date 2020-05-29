@@ -27,18 +27,21 @@ class BtreeDB:
         self._db[ujson.dumps(key)] = ujson.dumps(value)
 
     def put(self, key, value):
-        self._db[ujson.dumps(key)] = ujson.dumps(value)
+        self.__setitem__(key, value)
 
     def __getitem__(self, key):
         return ujson.loads(self._db[ujson.dumps(key)])
 
     def get(self, key, default=None):
-        return ujson.loads(self._db.get(ujson.dumps(key), default))
+        try:
+            return self.__getitem__(key)
+        except:
+            return default
 
     # from here maybe its better to do it in this way:
     # https://stackoverflow.com/questions/13460889/how-to-redirect-all-methods-of-a-contained-class-in-python
     def __delitem__(self, key):
-        del self._db[key]
+        del self._db[ujson.dumps(key)]
 
     def __contains__(self, key):
         return ujson.dumps(key) in self._db
