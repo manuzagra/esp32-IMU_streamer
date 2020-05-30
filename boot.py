@@ -4,12 +4,15 @@
 #import webrepl
 #webrepl.start()
 
-import utils
+
 import connections
 
+# Create an interface and connect it to the local network
 wifi_station = connections.wifi.Station()
-wifi_station.connect('Cebolleta', 'tiguer32')
+wifi_station = connections.manager.connect(wifi_station)
 wifi_station.set_ip('192.168.0.40')
 
-
+import utils
 import utils.uftpd
+
+
