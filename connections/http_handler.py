@@ -1,7 +1,5 @@
 import usocket
 
-# https://stackoverflow.com/questions/10114224/how-to-properly-send-http-response-with-python-using-socket-library-only
-
 class Server:
 
     def __init__(self, address=('0.0.0.0', 80)):

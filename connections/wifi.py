@@ -13,9 +13,9 @@ class Station:
     def deactivate(self):
         self._wlan.active(False)
 
-    def connect(self, essid, password, timeout=0):
+    def connect(self, ssid, password, timeout=10):
         self._wlan.active(True)
-        self._wlan.connect(essid, password)
+        self._wlan.connect(ssid, password)
         for t in range(timeout):
             utime.sleep(1)
             if self._wlan.isconnected():
@@ -25,8 +25,14 @@ class Station:
     def disconnect(self):
         self._wlan.disconnect()
 
-    def get_wlanection(self):
+    def isconnected(self):
+        return self._wlan.isconnected()
+
+    def get_wlan_conection(self):
         return self._wlan
+
+    def ifconfig(self):
+        return self._wlan.ifconfig()
 
     def set_ip(self, ip):
         _ip = list(self._wlan.ifconfig())
@@ -47,9 +53,9 @@ class AccessPoint:
     def deactivate(self):
         self._wlan.active(False)
 
-    def connect(self, essid, password):
+    def connect(self, ssid, password):
         self._wlan.active(True)
-        self._wlan.config(essid=essid, password=password)
+        self._wlan.config(essid=ssid, password=password)
         while not self._wlan.isconnected():
             pass
         return True
@@ -57,5 +63,16 @@ class AccessPoint:
     def disconnect(self):
         self._wlan.disconnect()
 
-    def get_wlanection(self):
+    def isconnected(self):
+        return self._wlan.isconnected()
+
+    def get_wlan_conection(self):
         return self._wlan
+
+    def ifconfig(self):
+        return self._wlan.ifconfig()
+
+    def set_ip(self, ip):
+        _ip = list(self._wlan.ifconfig())
+        _ip[0] = ip
+        self._wlan.ifconfig(tuple(_ip))
